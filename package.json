@@ -1,0 +1,23 @@
+{
+  "name": "bookstore-management-system",
+  "version": "1.0.0",
+  "description": "The goal of this project is to develop an Online Bookstore Management System using Node.js and server-side programming. The system should provide functionality for managing books, customers, orders, and inventory. Users should be able to browse and search for books, create customer accounts, place orders, and track their order status.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "group 7",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0"
+  }
+}
