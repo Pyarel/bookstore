@@ -26,14 +26,9 @@ const loginUser = async function (req, res) {
     if (!bcrypt.compareSync(req.body.password, user.password)) {
       return res.status(401).json({ message: "Incorrect password" });
     }
-    const payload = {
-      username: user.username,
-      id: user._id,
-    };
-    const token = jwt.sign(payload, "Lambton@23", { expiresIn: "1h" });
+
     return res.status(200).json({
       message: "Welcome!",
-      token: "Bearer " + token,
       username: user.username,
     });
     // console.log(token);

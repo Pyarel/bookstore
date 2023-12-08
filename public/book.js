@@ -18,8 +18,9 @@ function checkAuthentication() {
   return false;
 }
 
+const username = sessionStorage.getItem("username");
 /*To display the addForm when add New book button is clicked.
-        This function also gets the value of input field and sent to createBook()*/
+         This function also gets the value of input field and sent to createBook()*/
 async function showAddForm() {
   document.getElementById("AddFormDiv").style.display = "block";
   document
@@ -50,13 +51,8 @@ async function showAddForm() {
 
 // Client Side JS Function to send POST request to server in order to create a book
 async function createBook(formData) {
-  // For Debugging
-
-  if (!checkAuthentication()) {
-    // Handle unauthenticated user (e.g., show an error message or redirect to login)
-    alert("User is not authenticated. Redirecting to login.");
-    return (window.location.href = "http://localhost:3000/login");
-  }
+  // For Debbugging
+  console.log(formData);
   const response = await fetch(`/api/books`, {
     method: "POST",
     headers: {
@@ -77,8 +73,6 @@ async function createBook(formData) {
 
 // Client Side JS Function to send request to server in search of a book
 async function searchBooks() {
-  if (!checkAuthentication())
-    return (window.location.href = "http://localhost:3000");
   const searchCriteria = document.getElementById("search").value;
   const response = await fetch(`/api/books/search?criteria=${searchCriteria}`);
   if (!response.ok) {
@@ -91,8 +85,6 @@ async function searchBooks() {
 
 // Client Side JS Function to send request to server for all book details.
 async function getAllBooks() {
-  if (!checkAuthentication())
-    return (window.location.href = "http://localhost:3000");
   const response = await fetch(`/api/books/`);
   if (!response.ok) {
     throw new Error("Network response was not ok");
@@ -105,8 +97,6 @@ async function getAllBooks() {
 // Client Side JS Function to send a PUT request to server in order to update the selected book.
 // Each Book entry has its own edit button. This edit button provided the bookId for the particualr book.
 async function updateBook(bookId, updatedValues) {
-  if (!checkAuthentication())
-    return (window.location.href = "http://localhost:3000");
   const response = await fetch(`/api/books/${bookId}`, {
     method: "PUT",
     headers: {
@@ -127,8 +117,6 @@ async function updateBook(bookId, updatedValues) {
 // Client Side JS Function to send a DELETE request to server in order to delete the selected book.
 // Each Book entry has its own delete button. This delete button determines which book has been selected for delete operation.
 async function deleteBook(bookId) {
-  if (!checkAuthentication())
-    return (window.location.href = "http://localhost:3000");
   try {
     const response = await fetch(`/api/books/${bookId}`, {
       method: "DELETE",
@@ -141,7 +129,7 @@ async function deleteBook(bookId) {
         "Failed to delete book: ${response.status} ${response.statusText}"
       );
     }
-    const deletedBook = await response.json();
+    await response.json();
     getAllBooks();
   } catch (error) {
     console.log("Error deleting the book");
@@ -169,7 +157,7 @@ function displayBook(books) {
       "Genre",
       "Quantity",
       "Price (in USD)",
-      "Edit",
+      "Action",
       "Delete",
     ];
 
@@ -275,9 +263,7 @@ function displayBook(books) {
         const cell = row.insertCell();
         cell.appendChild(form);
       });
-      row.insertCell().appendChild(updateIcon);
 
-      // Adding Delete button for each entry
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "Delete";
       deleteButton.classList.add("btn", "btn-danger", "btn-sm");
@@ -291,7 +277,53 @@ function displayBook(books) {
           deleteBook(book._id); // To Line: 245
         }
       });
-      row.insertCell().appendChild(deleteButton);
+
+      // Adding Add to Cart button for each entry
+      const addToCartButton = document.createElement("button");
+      addToCartButton.textContent = "Add to Cart";
+      addToCartButton.classList.add("btn", "btn-success", "btn-sm");
+
+      addToCartButton.addEventListener("click", () => {
+        let cart = getCookie("cart");
+        if (!cart) {
+          document.cookie = `cart=${encodeURIComponent(book.title)}; path=/`;
+          console.log(`${book.title} added to cart!`);
+        } else {
+          cart = decodeURIComponent(cart);
+          const cartItems = cart.split(", ");
+          if (!cartItems.includes(book.title)) {
+            cart += `, ${book.title}`;
+            document.cookie = `cart=${encodeURIComponent(cart)}; path=/`;
+            console.log(`${book.title} added to cart!`);
+          } else {
+            console.log(`${book.title} is already in the cart!`);
+          }
+          console.log(`cookie value:` + cart);
+        }
+      });
+
+      // Adding Delete button for each entry
+      const rmvFromCart = document.createElement("button");
+      rmvFromCart.textContent = "Remove From Cart";
+      rmvFromCart.classList.add("btn", "btn-danger", "btn-sm");
+      // When delete button is clicked
+      rmvFromCart.addEventListener("click", () => {
+        const confirmation = prompt(
+          `Do you want to remove Book from cart : ${book.title} \nType yes to proceed.`
+        );
+        // if the choice is yes or YES or Yes it call the deleteBook function
+        if (confirmation && confirmation.toLowerCase() === "yes") {
+          rmvBookFromCart(book._id); // To Line: 245
+        }
+      });
+      console.log("user Name:", username);
+      if (username === "admin") {
+        row.insertCell().appendChild(updateIcon);
+        row.insertCell().appendChild(deleteButton);
+      } else {
+        row.insertCell().appendChild(addToCartButton);
+        row.insertCell().appendChild(rmvFromCart);
+      }
     });
 
     booksTable.appendChild(table);
@@ -300,4 +332,17 @@ function displayBook(books) {
   }
 }
 
+// Function to retrieve cookie by name
+function getCookie(name) {
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [cookieName, cookieValue] = cookie.split("=");
+    if (cookieName === name) {
+      return cookieValue;
+    }
+  }
+  return null;
+}
+
+// Fetch all the book details when page is loaded
 getAllBooks();

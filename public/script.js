@@ -41,11 +41,8 @@ const signIn = function () {
     password,
   };
   makeRequest("POST", "http://localhost:3000/login", data).then((response) => {
-    sessionStorage.setItem("token", response.token);
     sessionStorage.setItem("username", response.username);
-    const booksURL = `http://localhost:3000/books${
-      response.token ? `?token=${response.token}` : ""
-    }`;
+
     // User is logged in, set a cookie
     setCookie(); // Set the cookie
 
