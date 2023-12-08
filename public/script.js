@@ -12,16 +12,7 @@ const makeRequest = async function (method, url, data = null) {
       },
       body: data ? JSON.stringify(data) : null,
     });
-
-    // Check if the response is HTML
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("text/html")) {
-      const htmlContent = await response.text();
-      return htmlContent;
-    }
-
     const responseData = await response.json();
-
     if (!response.ok)
       throw new Error(responseData.message || "Something went wrong");
     return responseData;
@@ -29,6 +20,18 @@ const makeRequest = async function (method, url, data = null) {
     console.error(err.message);
   }
 };
+
+function setCookie() {
+  // Calculate the expiration date, which is one minute from the current time
+  const expirationDate = new Date();
+  expirationDate.setMinutes(expirationDate.getMinutes() + 1);
+
+  // Format the expiration date in the correct format for the cookie
+  const expires = expirationDate.toUTCString();
+
+  // Set the cookie with the expires attribute
+  document.cookie = `isAuthenticated=true; path=/; expires=${expires}`;
+}
 
 const signIn = function () {
   const username = document.getElementById("username").value;
@@ -38,12 +41,11 @@ const signIn = function () {
     password,
   };
   makeRequest("POST", "http://localhost:3000/login", data).then((response) => {
-    sessionStorage.setItem("token", response.token);
-    const booksURL = `http://localhost:3000/books${
-      response.token ? `?token=${response.token}` : ""
-    }`;
+    // User is logged in, set a cookie
+    setCookie(); // Set the cookie
+
     // Navigate to the constructed URL
-    window.location.href = booksURL;
+    window.location.href = "http://localhost:3000/books";
   });
 };
 
