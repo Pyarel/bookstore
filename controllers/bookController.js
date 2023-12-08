@@ -11,24 +11,11 @@ const getAllBooks = async (req, res) => {
   }
 };
 
-/*const getBookById = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const book = await Book.findById(id);
-    if (!book) {
-      return res.status(404).json({ message: "Book not found" });
-    }
-    res.json(book);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};*/
-
 // To search book  by title, author or genre
 const searchBooks = async (req, res) => {
   const { criteria } = req.query;
   const regex = new RegExp(criteria, "i");
-  console.log(criteria);
+  //For debugging console.log(criteria);
   try {
     let query;
 

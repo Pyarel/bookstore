@@ -58,7 +58,7 @@ app.get(
 );
 
 // Connecting to the bookstore database
-mongoose.connect("mongodb://localhost:27017/bookstore", {
+mongoose.connect("mongodb://127.0.0.1:27017/BookStore", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
