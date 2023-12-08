@@ -36,6 +36,7 @@ const loginUser = async function (req, res) {
       token: "Bearer " + token,
       username: user.username,
     });
+    // console.log(token);
   });
 };
 
