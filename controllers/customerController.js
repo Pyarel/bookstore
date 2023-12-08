@@ -31,6 +31,7 @@ const loginUser = async function (req, res) {
       id: user._id,
     };
     const token = jwt.sign(payload, "Lambton@23", { expiresIn: "1h" });
+
     return res
       .status(200)
       .json({ message: "Welcome!", token: "Bearer " + token });

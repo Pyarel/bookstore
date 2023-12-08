@@ -6,19 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/styles.css">
     <title>Register</title>
+    <script defer src="/script.js"></script>
 </head>
 
 <body>
-    <h1>Register</h1>
-    <form action="/register" method="post">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Register</button>
-    </form>
+    <div class="register">
+        <div class="card">
+            <div class="register-container">
+                <div class="img-container">
+                    <img src="/register.jpg" alt="Login Image">
+                </div>
+                <form>
+                    <h1>Sign Up</h1>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                    <br>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                    <br>
+                    <button type="button" onclick="signUp()">Create Account</button><br><br>
+                    <p>Go back to <a href="/">Sign In</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

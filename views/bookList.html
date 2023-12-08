@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bookstore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" />
+    <style>
+        body {
+            background-color: azure;
+            margin: 0% 5% 0% 5%;
+        }
+
+        h1 {
+            margin-top: 2%;
+            margin-bottom: 2%;
+            text-align: center;
+        }
+
+        h3 {
+            display: inline-block;
+        }
+
+        button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>BOOK WORLD STORE</h1>
+    <div id="mainDiv" class="row">
+        <div id="bookDiv" class="col-lg-8 col-sm-6">
+            <h3>Books Available</h3>
+        </div>
+        <div id="bookSearchDiv" class="col-lg-4 col-sm-6">
+            <div class="d-flex justify-content-end align-items-center">
+                <input type="text" id="search" placeholder="Enter title/author or genre" />
+                <button id="searchBtn" class="btn btn-primary btn-sm" onclick="searchBooks()">
+                    Search
+                </button>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div id="booksTableDiv"></div>
+    <div id="addBookDiv">
+        <button id="addBtn" class="btn btn-primary btn-sm" onclick="showAddForm()">
+            Add New Book
+        </button>
+    </div>
+
+    <!--The form is by default not displayed-->
+    <div id="AddFormDiv" style="display: none">
+        <h5>please provide the details</h5>
+        <form id="newBookForm">
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="TitleId">Title</span>
+                <input type="text" id="AddTitle" name="AddTitle" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-sm" required />
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="AuthorId">Author</span>
+                <input type="text" id="AddAuthor" name="AddAuthor" class="form-control"
+                    aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" />
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="GenreId">Genre</span>
+                <input type="text" id="AddGenre" name="AddGenre" class="form-control" aria-label="Sizing example input"
+                    aria-describedby="inputGroup-sizing-sm" />
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-sm">Quantity</span>
+                <input type="number" id="AddQuantity" name="AddQuantity" class="form-control"
+                    aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" />
+            </div>
+            <div class="input-group input-group-sm mb-3">
+                <span class="input-group-text" id="inputGroup-sizing-sm">Price (in USD)</span>
+                <input type="text" id="AddPrice" name="AddPrice" min="0" max="1000" step="0.01" class="form-control"
+                    aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm" />
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">
+                Create Book
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const token = sessionStorage.getItem("token");
+        /*To display the addForm when add New book button is clicked.
+        This function also gets the value of input field and sent to createBook()*/
+        async function showAddForm() {
+            document.getElementById("AddFormDiv").style.display = "block";
+            document
+                .getElementById("newBookForm")
+                .addEventListener("submit", async function (event) {
+                    event.preventDefault();
+
+                    const formData = {
+                        title: document.getElementById("AddTitle").value,
+                        author: document.getElementById("AddAuthor").value,
+                        genre: document.getElementById("AddGenre").value,
+                        quantity: document.getElementById("AddQuantity").value,
+                        price: document.getElementById("AddPrice").value,
+                    };
+
+                    try {
+                        const createdBook = await createBook(formData);
+                        alert("Book added successfully");
+                    } catch (error) {
+                        console.error("error:", error.message);
+                    } finally {
+                        document.getElementById("AddFormDiv").style.display = "none";
+                        document.getElementById("newBookForm").reset();
+                        getAllBooks();
+                    }
+                });
+        }
+
+        // Client Side JS Function to send POST request to server in order to create a book
+        async function createBook(formData) {
+
+            // For Debbugging
+            console.log(formData);
+            const response = await fetch(`/api/books`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token && { Authorization: `${token}` }),
+
+
+                },
+                body: JSON.stringify(formData),
+            });
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to Add book: ${response.status} ${response.statusText}"
+                );
+            }
+
+            // received response
+            const createdBook = await response.json();
+            return createdBook;
+        }
+
+        // Client Side JS Function to send request to server in search of a book
+        async function searchBooks() {
+            const searchCriteria = document.getElementById("search").value;
+            const response = await fetch(
+                `/api/books/search?criteria=${searchCriteria}`, {
+                headers: {
+                    ...(token && { Authorization: `${token}` }),
+                },
+            }
+            );
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            const books = await response.json();
+            console.log("in html data:", books);
+            displayBook(books);
+        }
+
+        // Client Side JS Function to send request to server for all book details.
+        async function getAllBooks() {
+            const response = await fetch(`/api/books/`, {
+                headers: {
+                    ...(token && { Authorization: `${token}` }),
+                },
+            });
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            const books = await response.json();
+            // For Debugging: console.log("All books: ", books);
+            displayBook(books);
+        }
+
+        // Client Side JS Function to send a PUT request to server in order to update the selected book.
+        // Each Book entry has its own edit button. This edit button provided the bookId for the particualr book.
+        async function updateBook(bookId, updatedValues) {
+            const response = await fetch(`/api/books/${bookId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token && { Authorization: `${token}` }),
+                },
+                body: JSON.stringify(updatedValues),
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to update book: ${response.status} ${response.statusText}"
+                );
+            }
+            const updatedBook = await response.json();
+            return updatedBook;
+        }
+
+        // Client Side JS Function to send a DELETE request to server in order to delete the selected book.
+        // Each Book entry has its own delete button. This delete button determines which book has been selected for delete operation.
+        async function deleteBook(bookId) {
+            try {
+                const response = await fetch(`/api/books/${bookId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `${token}` }),
+                    },
+                });
+                if (!response.ok) {
+                    throw new Error(
+                        "Failed to delete book: ${response.status} ${response.statusText}"
+                    );
+                }
+                const deletedBook = await response.json();
+                getAllBooks();
+            } catch (error) {
+                console.log("Error deleting the book");
+            }
+        }
+
+        // This function displays the details of all books from BookStore.books (from DB) to html page in table format
+        function displayBook(books) {
+            // get the element by ID
+            const booksTable = document.getElementById("booksTableDiv");
+            booksTable.innerHTML = "";
+            // If book details is fetched
+            if (books.length > 0) {
+                // create Table to display
+                const table = document.createElement("table");
+
+                // style table with bootstrap
+                table.classList.add("table");
+
+                // create Header Row element for table (tr)
+                const headerRow = table.insertRow(0);
+                const headers = [
+                    "Title",
+                    "Author",
+                    "Genre",
+                    "Quantity",
+                    "Price (in USD)",
+                    "Edit",
+                    "Delete",
+                ];
+
+                // Creating th for each headers.
+                headers.forEach((headerText) => {
+                    const header = document.createElement("th");
+
+                    // style header using bootStrap
+                    header.classList.add("table-dark");
+                    header.textContent = headerText;
+                    headerRow.appendChild(header);
+                });
+
+                //Populate the table with book details
+                books.forEach((book) => {
+                    const row = table.insertRow();
+                    const cells = [
+                        book.title,
+                        book.author,
+                        book.genre,
+                        book.quantity,
+                        book.price,
+                    ];
+                    cells.forEach((cellText) => {
+                        const cell = row.insertCell();
+                        cell.textContent = cellText;
+                    });
+
+                    // Edit Form
+                    const EditForm = (book) => {
+                        const form = document.createElement("form");
+
+                        // create label for quantity
+                        const quantityLabel = document.createElement("label");
+                        quantityLabel.setAttribute("for", "quantity");
+                        quantityLabel.innerHTML = "Quantity";
+                        //create input field for quantity
+                        const quantityInput = document.createElement("input");
+                        quantityInput.type = "number"; // setting the input field type = "number"
+                        quantityInput.value = book.quantity; // Setting the existing value
+                        quantityInput.name = "quantity"; // setting the input field name = "quantity"
+                        quantityInput.id = "quantity"; // setting the id of this element to be used later in JavaScript
+                        quantityInput.min = 0; // minimum number allowed is zero
+                        quantityInput.max = book.stock; // maximum number allowed is stock
+                        quantityInput.step = 1; // step size is one
+                        quantityInput.required = true; // required field
+
+                        // create label for price
+                        const priceLabel = document.createElement("label");
+                        priceLabel.setAttribute("for", "price");
+                        priceLabel.innerHTML = "Price";
+                        //create input field for price
+                        const priceInput = document.createElement("input");
+                        priceInput.type = "number"; // setting the input field type = "number"
+                        priceInput.min = "0";
+                        priceInput.max = "1000";
+                        priceInput.step = "0.01";
+                        priceInput.value = book.price; // Setting the existing value
+                        priceInput.name = "price"; // setting the input field name = "price"
+
+                        const submitButton = document.createElement("button");
+                        submitButton.type = "submit";
+                        submitButton.textContent = "Update";
+
+                        // Append input fields and submit button to form
+                        form.appendChild(quantityLabel);
+                        form.appendChild(quantityInput);
+                        form.appendChild(priceLabel);
+                        form.appendChild(priceInput);
+                        form.appendChild(submitButton);
+
+                        form.addEventListener("submit", async (event) => {
+                            event.preventDefault();
+
+                            // get the updated Values
+                            const updatedValues = {
+                                quantity: quantityInput.value,
+                                price: priceInput.value,
+                            };
+
+                            //Call the updateBook function with book ID and updated Values.
+                            try {
+                                const updatedBook = await updateBook(book._id, updatedValues);
+                                console.log("Book updated:", updatedBook);
+                                form.remove();
+                                getAllBooks();
+                            } catch (error) {
+                                console.error("Failed to update book");
+                            }
+                        });
+
+                        return form;
+                    };
+
+                    // Adding update Icon for each entry
+                    const updateIcon = document.createElement("i");
+                    updateIcon.classList.add("bi", "bi-pen-fill");
+                    // When clicked on updateIcon
+                    updateIcon.addEventListener("click", () => {
+                        console.log("Updated clicked for book:", book);
+                        const form = EditForm(book);
+                        const row = updateIcon.parentElement.parentElement; // accessing row element of the particular icon
+                        const cell = row.insertCell();
+                        cell.appendChild(form);
+                    });
+                    row.insertCell().appendChild(updateIcon);
+
+                    // Adding Delete button for each entry
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.classList.add("btn", "btn-danger", "btn-sm");
+                    // When delete button is clicked
+                    deleteButton.addEventListener("click", () => {
+                        const confirmation = prompt(
+                            `Are you sure you want to delete Book : ${book.title} \nType yes to proceed.`
+                        );
+                        // if the choice is yes or YES or Yes it call the deleteBook function
+                        if (confirmation && confirmation.toLowerCase() === "yes") {
+                            deleteBook(book._id); // To Line: 245
+                        }
+                    });
+                    row.insertCell().appendChild(deleteButton);
+                });
+
+                booksTable.appendChild(table);
+            } else {
+                booksTable.textContent = "No Books Found!!!";
+            }
+        }
+
+        // Fetch all the book details when page is loaded
+        getAllBooks();
+        // You can add functions for adding, updating, and deleting books as needed.
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

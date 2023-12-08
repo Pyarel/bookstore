@@ -1,18 +1,77 @@
 /* public/styles.css */
+* {
+  margin: 0;
+  padding: 0;
+}
 body {
   font-family: Arial, sans-serif;
   text-align: center;
-  margin: 20px;
+}
+.login,
+.register {
+  background: rgb(66, 14, 236);
+  height: 100vh;
+  width: 100vw;
+}
+.card {
+  height: 80vh;
+  width: 80vw;
+  padding: 10px;
+  background: white;
+  margin: 0 auto;
+  top: 50px;
+  position: relative;
+  border: 1px solid grey;
+  border-radius: 20px;
+}
+.login-container,
+.register-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-form {
+.login-container img,
+.register-container img {
+  width: 110%;
+  height: 500px;
+}
+.login-container form,
+.register-container form {
+  margin-left: 3em;
   display: inline-block;
   text-align: left;
-  margin-top: 20px;
+  margin-top: 1.5em;
+  width: 30%;
+  padding: 5em;
+  margin: 0 auto;
 }
 
 label,
 input {
   display: block;
   margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.login-container h1,
+.register-container h1 {
+  padding: 10px;
+  margin: 0.7em;
+  top: -0.5em;
+  position: relative;
+}
+.login-container input,
+.register-container input {
+  padding: 10px;
+  width: 15em;
+}
+.login-container button,
+.register-container button {
+  background-color: rgb(66, 14, 236);
+  padding: 15px 20px;
+  width: 14em;
+  font-size: 14px;
+  color: white;
+  border: 1px solid rgb(235, 234, 241);
 }
