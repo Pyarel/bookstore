@@ -302,7 +302,7 @@ function displayBook(books) {
           }
       });
 
-      row.insertCell().appendChild(addToCartButton);
+      // row.insertCell().appendChild(addToCartButton);
 
 
       // Adding Delete button for each entry
