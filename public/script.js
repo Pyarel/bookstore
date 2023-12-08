@@ -1,14 +1,9 @@
 const makeRequest = async function (method, url, data = null) {
   try {
-    // Retrieve the token from sessionStorage
-    const token = sessionStorage.getItem("token");
-
     const response = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
-        // Include the token in the Authorization header if available
-        ...(token && { Authorization: `${token}` }),
       },
       body: data ? JSON.stringify(data) : null,
     });
