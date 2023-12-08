@@ -21,6 +21,43 @@ app.get("/register", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "register.html"));
 });
 
+app.get("/cart", (req, res) => {
+  res.sendFile(__dirname + "/views/cart.html");
+});
+app.post('/place-order', async (req, res) => {
+  const { name, mobile, address, items } = req.body; // Retrieve order details from the request
+  try {
+      // Create a new order instance using the Order model
+      const newOrder = new Order({
+          name,
+          mobile,
+          address,
+          items,
+      });
+      // Save the new order to the database
+      const savedOrder = await newOrder.save();
+      console.log('Order saved:', savedOrder);
+      
+      res.status(201).json({ message: 'Order placed successfully' });
+  } catch (error) {
+      console.error('Error placing order:', error);
+      res.status(500).json({ error: 'Failed to place order' });
+  }
+});
+// Middleware for extracting and verifying the token
+const authenticateToken = (req, res, next) => {
+  const token = req.query.token.slice(7);
+  if (!token) {
+    return res.sendStatus(401); // Unauthorized
+  }
+  jwt.verify(token, "Lambton@23", (err) => {
+    if (err) {
+      return res.sendStatus(403); // Forbidden
+    }
+    next();
+  });
+};
+
 // Example protected route that requires authentication
 app.get("/books", (req, res) => {
   // Your logic for handling the /books route

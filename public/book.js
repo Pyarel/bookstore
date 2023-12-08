@@ -284,23 +284,26 @@ function displayBook(books) {
       addToCartButton.classList.add("btn", "btn-success", "btn-sm");
 
       addToCartButton.addEventListener("click", () => {
-        let cart = getCookie("cart");
-        if (!cart) {
-          document.cookie = `cart=${encodeURIComponent(book.title)}; path=/`;
-          console.log(`${book.title} added to cart!`);
-        } else {
-          cart = decodeURIComponent(cart);
-          const cartItems = cart.split(", ");
-          if (!cartItems.includes(book.title)) {
-            cart += `, ${book.title}`;
-            document.cookie = `cart=${encodeURIComponent(cart)}; path=/`;
-            console.log(`${book.title} added to cart!`);
+          let cart = getCookie('cart');
+          if (!cart) {
+              document.cookie = `cart=${encodeURIComponent(book.title)}; path=/`;
+              console.log(`${book.title} added to cart!`);
           } else {
-            console.log(`${book.title} is already in the cart!`);
+              cart = decodeURIComponent(cart);
+              const cartItems = cart.split(', ');
+              if (!cartItems.includes(book.title)) {
+                  cart += `, ${book.title}`;
+                  document.cookie = `cart=${encodeURIComponent(cart)}; path=/`;
+                  console.log(`${book.title} added to cart!`);
+              } else {
+                  console.log(`${book.title} is already in the cart!`);
+              }
+              console.log(`cookie value:` + cart)
           }
-          console.log(`cookie value:` + cart);
-        }
       });
+
+      row.insertCell().appendChild(addToCartButton);
+
 
       // Adding Delete button for each entry
       const rmvFromCart = document.createElement("button");
@@ -334,12 +337,12 @@ function displayBook(books) {
 
 // Function to retrieve cookie by name
 function getCookie(name) {
-  const cookies = document.cookie.split("; ");
+  const cookies = document.cookie.split('; ');
   for (const cookie of cookies) {
-    const [cookieName, cookieValue] = cookie.split("=");
-    if (cookieName === name) {
-      return cookieValue;
-    }
+      const [cookieName, cookieValue] = cookie.split('=');
+      if (cookieName === name) {
+          return cookieValue;
+      }
   }
   return null;
 }

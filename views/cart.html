@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart Items</title>
+    <!-- Add any necessary CSS styles here -->
+    <style>
+        /* Example styles for the cart items */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .count-input {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cart Items</h1>
+    <table id="cartItems">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Cart items will be dynamically added here -->
+        </tbody>
+    </table>
+
+    <div class="order-form">
+        <h2>Order Details</h2>
+        <form id="orderForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="mobile">Mobile:</label>
+            <input type="text" id="mobile" name="mobile" required>
+            <label for="address">Address:</label>
+            <textarea id="address" name="address" required></textarea>
+            <button type="submit">Place Order</button>
+        </form>
+    </div>
+
+    <div class="success-message" id="successMessage" style="display: none;">Order placed successfully!</div>
+
+    <!-- Add any necessary scripts here -->
+    <script>
+        // JavaScript logic to display cart items in the HTML
+        window.onload = () => {
+            const cartItems = getCookie('cart');
+            if (cartItems) {
+                const cartTable = document.getElementById('cartItems').querySelector('tbody');
+                const cartItemsArray = decodeURIComponent(cartItems).split(', ');
+                
+                // Loop through the cart items and create table rows to display
+                cartItemsArray.forEach((item) => {
+                    const row = cartTable.insertRow();
+                    const cell1 = row.insertCell(0);
+                    cell1.textContent = item;
+                    
+                    const cell2 = row.insertCell(1);
+                    const countInput = document.createElement('input');
+                    countInput.type = 'number';
+                    countInput.value = 1; // Initial count
+                    countInput.min = 1; // Minimum count
+                    countInput.classList.add('count-input');
+                    cell2.appendChild(countInput);
+                });
+            } else {
+                // Display a message if the cart is empty
+                const cartTable = document.getElementById('cartItems').querySelector('tbody');
+                const emptyRow = cartTable.insertRow();
+                const emptyCell = emptyRow.insertCell(0);
+                emptyCell.textContent = 'Your cart is empty';
+            }
+        };
+
+        // Function to retrieve cookie by name
+        function getCookie(name) {
+            const cookies = document.cookie.split('; ');
+            for (const cookie of cookies) {
+                const [cookieName, cookieValue] = cookie.split('=');
+                if (cookieName === name) {
+                    return cookieValue;
+                }
+            }
+            return null;
+        }
+/*
+        // Handle form submission
+        document.getElementById('orderForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            // Get form data
+            const formData = new FormData(this);
+            // Access form values
+            const name = formData.get('name');
+            const mobile = formData.get('mobile');
+            const address = formData.get('address');
+            // Perform further actions (e.g., send order data to server)
+            console.log('Order details:', { name, mobile, address });
+            // Add further logic to handle order placement (e.g., AJAX request to send data to server)
+        });
+*/
+        // Handle form submission
+        document.getElementById('orderForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            // Get form data
+            const formData = new FormData(this);
+            // Access form values
+            const name = formData.get('name');
+            const mobile = formData.get('mobile');
+            const address = formData.get('address');
+            
+            // Collect cart items and counts
+            const cartItemsArray = [];
+            const cartRows = document.querySelectorAll('#cartItems tbody tr');
+            cartRows.forEach(row => {
+                const itemName = row.cells[0].textContent;
+                const itemCount = row.cells[1].querySelector('.count-input').value;
+                cartItemsArray.push(`${itemName}: ${itemCount}`);
+            });
+
+            // Create an object with order details
+            const orderData = {
+                name,
+                mobile,
+                address,
+                items: cartItemsArray,
+            };
+
+            try {
+                // Send order data to the server
+                const response = await fetch('/place-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData),
+                });
+
+                if (response.ok) {
+                    document.getElementById('successMessage').style.display = 'block'; // Show success message
+                    console.log('Order placed successfully');
+                    // Redirect or perform other actions upon successful order placement
+                } else {
+                    console.error('Failed to place order');
+                    // Handle failed order placement
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                // Handle error while placing order
+            }
+        });
+    </script>
+</body>
+</html>
