@@ -158,9 +158,8 @@ function displayBook(books) {
       "Quantity",
       "Price (in USD)",
       "Action",
-      "Delete",
+      `${username === "admin" ? "Delete" : ""}`,
     ];
-
     // Creating th for each headers.
     headers.forEach((headerText) => {
       const header = document.createElement("th");
@@ -284,48 +283,32 @@ function displayBook(books) {
       addToCartButton.classList.add("btn", "btn-success", "btn-sm");
 
       addToCartButton.addEventListener("click", () => {
-          let cart = getCookie('cart');
-          if (!cart) {
-              document.cookie = `cart=${encodeURIComponent(book.title)}; path=/`;
-              console.log(`${book.title} added to cart!`);
+        let cart = getCookie("cart");
+        if (!cart) {
+          document.cookie = `cart=${encodeURIComponent(book.title)}; path=/`;
+          console.log(`${book.title} added to cart!`);
+        } else {
+          cart = decodeURIComponent(cart);
+          const cartItems = cart.split(", ");
+          if (!cartItems.includes(book.title)) {
+            cart += `, ${book.title}`;
+            document.cookie = `cart=${encodeURIComponent(cart)}; path=/`;
+            console.log(`${book.title} added to cart!`);
           } else {
-              cart = decodeURIComponent(cart);
-              const cartItems = cart.split(', ');
-              if (!cartItems.includes(book.title)) {
-                  cart += `, ${book.title}`;
-                  document.cookie = `cart=${encodeURIComponent(cart)}; path=/`;
-                  console.log(`${book.title} added to cart!`);
-              } else {
-                  console.log(`${book.title} is already in the cart!`);
-              }
-              console.log(`cookie value:` + cart)
+            console.log(`${book.title} is already in the cart!`);
           }
+          console.log(`cookie value:` + cart);
+        }
       });
 
       // row.insertCell().appendChild(addToCartButton);
 
-
-      // Adding Delete button for each entry
-      const rmvFromCart = document.createElement("button");
-      rmvFromCart.textContent = "Remove From Cart";
-      rmvFromCart.classList.add("btn", "btn-danger", "btn-sm");
-      // When delete button is clicked
-      rmvFromCart.addEventListener("click", () => {
-        const confirmation = prompt(
-          `Do you want to remove Book from cart : ${book.title} \nType yes to proceed.`
-        );
-        // if the choice is yes or YES or Yes it call the deleteBook function
-        if (confirmation && confirmation.toLowerCase() === "yes") {
-          rmvBookFromCart(book._id); // To Line: 245
-        }
-      });
       console.log("user Name:", username);
       if (username === "admin") {
         row.insertCell().appendChild(updateIcon);
         row.insertCell().appendChild(deleteButton);
       } else {
         row.insertCell().appendChild(addToCartButton);
-        row.insertCell().appendChild(rmvFromCart);
       }
     });
 
@@ -337,12 +320,12 @@ function displayBook(books) {
 
 // Function to retrieve cookie by name
 function getCookie(name) {
-  const cookies = document.cookie.split('; ');
+  const cookies = document.cookie.split("; ");
   for (const cookie of cookies) {
-      const [cookieName, cookieValue] = cookie.split('=');
-      if (cookieName === name) {
-          return cookieValue;
-      }
+    const [cookieName, cookieValue] = cookie.split("=");
+    if (cookieName === name) {
+      return cookieValue;
+    }
   }
   return null;
 }
