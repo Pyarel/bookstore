@@ -6,7 +6,7 @@ const cors = require("cors");
 const bookRoutes = require("./routes/bookRoutes");
 const jwt = require("jsonwebtoken");
 const app = express();
-
+const Order = require("./models/order");
 app.use(express.static("public")); // Serve static files from the "public" directory
 app.use(express.json());
 // Middleware to parse URL-encoded data
@@ -24,24 +24,24 @@ app.get("/register", (req, res) => {
 app.get("/cart", (req, res) => {
   res.sendFile(__dirname + "/views/cart.html");
 });
-app.post('/place-order', async (req, res) => {
+app.post("/place-order", async (req, res) => {
   const { name, mobile, address, items } = req.body; // Retrieve order details from the request
   try {
-      // Create a new order instance using the Order model
-      const newOrder = new Order({
-          name,
-          mobile,
-          address,
-          items,
-      });
-      // Save the new order to the database
-      const savedOrder = await newOrder.save();
-      console.log('Order saved:', savedOrder);
-      
-      res.status(201).json({ message: 'Order placed successfully' });
+    // Create a new order instance using the Order model
+    const newOrder = new Order({
+      name,
+      mobile,
+      address,
+      items,
+    });
+    // Save the new order to the database
+    const savedOrder = await newOrder.save();
+    console.log("Order saved:", savedOrder);
+
+    res.status(201).json({ message: "Order placed successfully" });
   } catch (error) {
-      console.error('Error placing order:', error);
-      res.status(500).json({ error: 'Failed to place order' });
+    console.error("Error placing order:", error);
+    res.status(500).json({ error: "Failed to place order" });
   }
 });
 // Middleware for extracting and verifying the token

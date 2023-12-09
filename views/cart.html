@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Cart Items</title>
@@ -10,19 +11,24 @@
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .count-input {
             width: 50px;
         }
     </style>
 </head>
+
 <body>
     <h1>Cart Items</h1>
     <table id="cartItems">
@@ -60,13 +66,13 @@
             if (cartItems) {
                 const cartTable = document.getElementById('cartItems').querySelector('tbody');
                 const cartItemsArray = decodeURIComponent(cartItems).split(', ');
-                
+
                 // Loop through the cart items and create table rows to display
                 cartItemsArray.forEach((item) => {
                     const row = cartTable.insertRow();
                     const cell1 = row.insertCell(0);
                     cell1.textContent = item;
-                    
+
                     const cell2 = row.insertCell(1);
                     const countInput = document.createElement('input');
                     countInput.type = 'number';
@@ -95,9 +101,23 @@
             }
             return null;
         }
-/*
+        /*
+                // Handle form submission
+                document.getElementById('orderForm').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    // Get form data
+                    const formData = new FormData(this);
+                    // Access form values
+                    const name = formData.get('name');
+                    const mobile = formData.get('mobile');
+                    const address = formData.get('address');
+                    // Perform further actions (e.g., send order data to server)
+                    console.log('Order details:', { name, mobile, address });
+                    // Add further logic to handle order placement (e.g., AJAX request to send data to server)
+                });
+        */
         // Handle form submission
-        document.getElementById('orderForm').addEventListener('submit', function(event) {
+        document.getElementById('orderForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             // Get form data
             const formData = new FormData(this);
@@ -105,21 +125,7 @@
             const name = formData.get('name');
             const mobile = formData.get('mobile');
             const address = formData.get('address');
-            // Perform further actions (e.g., send order data to server)
-            console.log('Order details:', { name, mobile, address });
-            // Add further logic to handle order placement (e.g., AJAX request to send data to server)
-        });
-*/
-        // Handle form submission
-        document.getElementById('orderForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            // Get form data
-            const formData = new FormData(this);
-            // Access form values
-            const name = formData.get('name');
-            const mobile = formData.get('mobile');
-            const address = formData.get('address');
-            
+
             // Collect cart items and counts
             const cartItemsArray = [];
             const cartRows = document.querySelectorAll('#cartItems tbody tr');
@@ -150,7 +156,9 @@
                 if (response.ok) {
                     document.getElementById('successMessage').style.display = 'block'; // Show success message
                     console.log('Order placed successfully');
+
                     // Redirect or perform other actions upon successful order placement
+                    document.cookie = 'cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 } else {
                     console.error('Failed to place order');
                     // Handle failed order placement
@@ -162,4 +170,5 @@
         });
     </script>
 </body>
+
 </html>
